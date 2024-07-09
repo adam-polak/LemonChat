@@ -1,0 +1,27 @@
+﻿@page "/chat"
+@rendermode InteractiveServer
+
+<MudLayout>
+    <MudAppBar Fixed="false" Elevation="0">
+        <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3};")">View Chats</MudButton>
+        <MudSpacer />
+        <MudText Edge="Edge.End" Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.5em;")">LemonChat</MudText>
+    </MudAppBar>
+    <MudDrawerContainer class="mud-height-full">
+        <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4}")">
+            <MudDrawerHeader><h1>Hi</h1></MudDrawerHeader>
+        </MudDrawer>
+        <MudMainContent Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; height: 100vh;")">
+
+        </MudMainContent>
+    </MudDrawerContainer>
+</MudLayout>
+
+@code {
+    bool _openChat = true;
+
+    public void ToggleChat()
+    {
+        _openChat = !_openChat;
+    }
+}
