@@ -4,22 +4,6 @@
 <MudPopoverProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
-<MudThemeProvider Theme="MyCustomTheme" />
+<MudThemeProvider />
 
 @Body
-
-@code {
-    MudTheme MyCustomTheme = new MudTheme()
-    {
-        PaletteLight = new PaletteLight()
-        {
-            Primary = Colors.Yellow.Darken4,
-            Secondary = Colors.Amber.Accent1,
-            AppbarBackground = Colors.Yellow.Lighten3,
-        },
-        LayoutProperties = new LayoutProperties()
-        {
-            DrawerWidthLeft = "260px",
-        }
-    };
-}
