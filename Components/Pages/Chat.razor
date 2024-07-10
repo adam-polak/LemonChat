@@ -1,23 +1,30 @@
 ﻿@page "/chat"
 @rendermode InteractiveServer
 
-<MudLayout>
-    <MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}")">
-        <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; font-size: 1.2em;")">View Chats</MudButton>
-        <MudSpacer />
-        <MudText Edge="Edge.End" Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">LemonChat</MudText>
-    </MudAppBar>
-    <MudDrawerContainer class="mud-height-full">
-        <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4};")">
-            <MudDrawerHeader><h1>Hi</h1></MudDrawerHeader>
-        </MudDrawer>
-        <MudMainContent Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; height: 100vh;")">
+<style>
+    .yellow-border-focus > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:focus-within ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
+    .yellow-border-hover > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:hover ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
+    .yellow-border > .mud-input-control-input-container > .mud-input.mud-input-outlined >  .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Lighten4}");}
+</style>
 
-        </MudMainContent>
-    </MudDrawerContainer>
-</MudLayout>
+<MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}")">
+    <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; font-size: 1.2em;")">View Chats</MudButton>
+    <MudSpacer />
+    <MudText Edge="Edge.End" Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">LemonChat</MudText>
+</MudAppBar>
+<MudDrawerContainer class="mud-height-full">
+    <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4};")">
+        <MudDrawerHeader><h1>Hi</h1></MudDrawerHeader>
+    </MudDrawer>
+    <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
+        <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; border-radius: 4px;")" Elevation="0">
+        </MudPaper>
+        <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Style="@($"width: 80vw; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+    </MudMainContent>
+</MudDrawerContainer>
 
 @code {
+    string InputChat = "";
     bool _openChat = true;
 
     public void ToggleChat()
