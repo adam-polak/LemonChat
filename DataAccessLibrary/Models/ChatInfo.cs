@@ -2,5 +2,7 @@ namespace LemonChat.DataAccessLibrary.Models;
 
 public class ChatInfo
 {
-
+    public int ChatID { get; set; }
+    public required string Chat_Name { get; set; }
+    public required string Users { get; set; }
 }
