@@ -8,4 +8,5 @@ public class ChatController
     {
         table_name = $"{id}_group";
     }
+    
 }
