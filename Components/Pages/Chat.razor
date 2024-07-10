@@ -7,13 +7,13 @@
     .yellow-border > .mud-input-control-input-container > .mud-input.mud-input-outlined >  .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Lighten4}");}
 </style>
 
-<MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}")">
+<MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}; height: 8vh;")">
     <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; font-size: 1.2em;")">View Chats</MudButton>
     <MudSpacer />
     <MudText Edge="Edge.End" Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">LemonChat</MudText>
 </MudAppBar>
-<MudDrawerContainer class="mud-height-full">
-    <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4};")">
+<MudDrawerContainer Style="@($"background:{Colors.Yellow.Darken2}; height; 92vh;")">
+    <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4}; height: 92vh;")">
         <MudDrawerHeader><h1>Hi</h1></MudDrawerHeader>
     </MudDrawer>
     <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
