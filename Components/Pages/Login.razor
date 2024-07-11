@@ -1,41 +1,93 @@
 @page "/"
+@using System.Text.RegularExpressions
 @rendermode InteractiveServer
-@inject IConfiguration configuration
 
-<h1 class="text-center">Login Here</h1>
+<style>
+    .yellow-border-focus > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:focus-within ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
+    .yellow-border-hover > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:hover ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
+    .yellow-border > .mud-input-control-input-container > .mud-input.mud-input-outlined >  .mud-input-outlined-border{@($"border-color: {Colors.DeepOrange.Darken2};");}
+</style>
 
-<MudButton @onclick="CreateUser">Test Create User</MudButton>
-<MudButton @onclick="ContainsUser">Test Contains User</MudButton>
-<MudButton @onclick="CorrectLogin">Test Correct Login</MudButton>
-<MudButton @onclick="CreateAndTestSessionKey">Test Session Keyr</MudButton>
+<MudPaper Style="@($"background-color: {Colors.Yellow.Lighten2}; height: 50%; width: 50%; margin: 10% auto; padding: 5%; border-radius: 10px;")">
+    @if(_displayStart)
+    {
+        <MudButton @onclick="ToggleLogin" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 2em; font-weight:900; width: 100%; margin-bottom: .5em;")">Login</MudButton>
+        <MudText class="text-center" Style="@($"color: {Colors.Yellow.Darken4}; font-size: 2.5em; font-weight:900; margin-bottom: .5em;")">OR</MudText>
+        <MudButton @onclick="ToggleCreateUser" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 2em; font-weight:900; width: 100%;")">Create User</MudButton>
+    } else if(_displayLogin) {
+        <MudButton @onclick="ToggleLogin" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 2em; font-weight:900; width: 100%; margin-bottom: 1em;")">Go Back</MudButton>
+        <MudForm @onsubmit="TryLogin">
+            <MudText>Username</MudText>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
+            <br>
+            <MudText>Password</MudText>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined"></MudTextField>
+            <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Login</MudButton>
+        </MudForm>
+    } else if(_displayCreateUser) {
+        <MudButton @onclick="ToggleCreateUser" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 2em; font-weight:900; width: 100%; margin-bottom: 1em;")">Go Back</MudButton>
+        <MudForm @onsubmit="TryCreateUser">
+            <MudText>Username</MudText>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
+            <br>
+            <MudText>Password</MudText>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined"></MudTextField>
+            <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Create User</MudButton>
+        </MudForm>
+    }
+</MudPaper>
 
 @code {
 
-    string connectionString;
+    bool _displayStart = true;
+    bool _displayLogin;
+    bool _displayCreateUser;
+    UserController userController;
+
+    User user = new User() { Username = "", Password = "" };
 
     protected override async Task OnInitializedAsync() {
-        connectionString = configuration.GetConnectionString("Default") ?? "";
+        await Task.Run(() => 
+        {
+            userController = new UserController(Config.GetConnectionString("Default") ?? "");
+        });
     }
 
-    void CreateUser()
+    void TryLogin()
     {
-        UserController.CreateUser(connectionString, "test", "password");
+        if(!Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) return; //only letters
+        if(Regex.IsMatch(user.Password, @"/^\S*$/")) return; //no spaces allowed
+        if(!userController.ContainsUser(user.Username)) return; //display user doesn't exist
+        if(!userController.IsCorrectLogin(user.Username, user.Password)) return; //display incorrect login
+        Navigation.NavigateTo($"/chat/{user.Username}/{userController.CreateSessionKey(user.Username, user.Password)}");
     }
 
-    void ContainsUser()
+    void TryCreateUser()
     {
-        Console.WriteLine(UserController.ContainsUser(connectionString, "test"));
+        if(!Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) return; //only letters
+        if(Regex.IsMatch(user.Password, @"/^\S*$/")) return; //no spaces allowed
+        if(userController.ContainsUser(user.Username)) return; //display user already exists
+        userController.CreateUser(user.Username, user.Password);
+        user.Username = "";
+        user.Password = "";
+        _displayCreateUser = !_displayCreateUser;
+        _displayLogin = !_displayLogin;
     }
 
-    void CorrectLogin()
+    void ToggleLogin()
     {
-        Console.WriteLine(UserController.IsCorrectLogin(connectionString, "test", "password"));
+        user.Username = "";
+        user.Password = "";
+        _displayStart = !_displayStart;
+        _displayLogin = !_displayLogin;
     }
 
-    void CreateAndTestSessionKey()
+    void ToggleCreateUser()
     {
-        int session_key = UserController.CreateSessionKey(connectionString, "test", "password");
-        Console.WriteLine(session_key);
-        Console.WriteLine(UserController.IsCorrectLogin(connectionString, "test", session_key));
+        user.Username = "";
+        user.Password = "";
+        _displayStart = !_displayStart;
+        _displayCreateUser = !_displayCreateUser;
     }
+
 }

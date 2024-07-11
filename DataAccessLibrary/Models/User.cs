@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
+
 namespace LemonChat.DataAccessLibrary.Models;
 
 public class User

@@ -1,4 +1,5 @@
 ﻿@page "/chat"
+@page "/chat/{RouteUsername}/{Session_Key:int}"
 @rendermode InteractiveServer
 
 <style>
@@ -29,11 +30,33 @@
 </MudDrawerContainer>
 
 @code {
+
     string InputChat = "";
     bool _openChat = true;
+
+    [Parameter]
+    public string? RouteUsername { get; set; }
+
+    [Parameter]
+    public int Session_Key { get; set; }
+
+    private string Username = "test";
+    private string Password = "";
+
+    UserController userController;
+
+    protected override async Task OnInitializedAsync() {
+        await Task.Run(() => 
+        {
+            Username = RouteUsername ?? Username;
+            userController = new UserController(Config.GetConnectionString("Default") ?? "");
+            if(!userController.IsCorrectLogin(Username, Session_Key) && !userController.IsCorrectLogin(Username, Password)) Navigation.NavigateTo("/");
+        });
+    }
 
     public void ToggleChat()
     {
         _openChat = !_openChat;
     }
+
 }
