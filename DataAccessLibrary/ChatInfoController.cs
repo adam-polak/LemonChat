@@ -10,6 +10,5 @@ public class ChatInfoController
     {
         table_name = Environment.GetEnvironmentVariable("CHATINFO_TABLE") ?? "";
         username = user;
-        userController = new UserController(username);
     }
 }

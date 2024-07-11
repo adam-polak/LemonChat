@@ -7,8 +7,8 @@ namespace LemonChat.DataAccessLibrary.Controllers;
 public class UserController
 {
     private string connectionString;
-    private static string User_Table = Environment.GetEnvironmentVariable("USER_TABLE") ?? "";
-    private static string User_InChat_Table = Environment.GetEnvironmentVariable("USER_INCHAT_TABLE") ?? "";
+    private static string User_Table = Environment.GetEnvironmentVariable("USER_TABLE") ?? "user_table";
+    private static string User_InChat_Table = Environment.GetEnvironmentVariable("USER_INCHAT_TABLE") ?? "user_inchat_table";
     private string chat_table;
     private string? username;
 

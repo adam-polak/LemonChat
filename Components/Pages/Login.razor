@@ -1,8 +1,41 @@
 @page "/"
 @rendermode InteractiveServer
+@inject IConfiguration configuration
 
 <h1 class="text-center">Login Here</h1>
 
-<NavLink class="nav-link text-center" href="chat">
-    <MudButton>Go to chat</MudButton>
-</NavLink>
+<MudButton @onclick="CreateUser">Test Create User</MudButton>
+<MudButton @onclick="ContainsUser">Test Contains User</MudButton>
+<MudButton @onclick="CorrectLogin">Test Correct Login</MudButton>
+<MudButton @onclick="CreateAndTestSessionKey">Test Session Keyr</MudButton>
+
+@code {
+
+    string connectionString;
+
+    protected override async Task OnInitializedAsync() {
+        connectionString = configuration.GetConnectionString("Default") ?? "";
+    }
+
+    void CreateUser()
+    {
+        UserController.CreateUser(connectionString, "test", "password");
+    }
+
+    void ContainsUser()
+    {
+        Console.WriteLine(UserController.ContainsUser(connectionString, "test"));
+    }
+
+    void CorrectLogin()
+    {
+        Console.WriteLine(UserController.IsCorrectLogin(connectionString, "test", "password"));
+    }
+
+    void CreateAndTestSessionKey()
+    {
+        int session_key = UserController.CreateSessionKey(connectionString, "test", "password");
+        Console.WriteLine(session_key);
+        Console.WriteLine(UserController.IsCorrectLogin(connectionString, "test", session_key));
+    }
+}

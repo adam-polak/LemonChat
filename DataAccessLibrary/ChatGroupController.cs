@@ -1,10 +1,10 @@
 namespace LemonChat.DataAccessLibrary.Controllers;
 
-public class ChatController
+public class ChatGroupController
 {
     private string table_name;
 
-    public ChatController(int id)
+    public ChatGroupController(int id)
     {
         table_name = $"{id}_group";
     }
