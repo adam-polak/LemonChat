@@ -8,6 +8,7 @@ public class UserController
 {
     private string connectionString;
     private static string User_Table = Environment.GetEnvironmentVariable("USER_TABLE") ?? "";
+    private static string User_InChat_Table = Environment.GetEnvironmentVariable("USER_INCHAT_TABLE") ?? "";
     private string chat_table;
     private string? username;
 
@@ -30,33 +31,14 @@ public class UserController
         }
     }
 
-    private static bool ContainsUserChatTable(string connectionString, string username)
+    private static bool IsUserInChat(string connectionString, string username, int chatId)
     {
         using(NpgsqlConnection connection =  new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            TableName? table = connection.Query<TableName>($"SELECT table_name FROM {Environment.GetEnvironmentVariable("DATABASE_NAME") ?? ""}.INFORMATION_SCHEMA.TABLES WHERE table_type='BASE TABLE' AND table_name='{username}_chats';").FirstOrDefault();
+            TableName? table = connection.Query<TableName>($"SELECT * FROM {User_InChat_Table} WHERE chatID={chatId} AND user='{username}';").FirstOrDefault();
             connection.Close();
             return table != null;
-        }
-    }
-
-    private static void EnsureUserChatTable(string connectionString, string username)
-    {
-        bool deleteTable = ContainsUserChatTable(connectionString, username);
-        using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
-        {
-            connection.Open();
-            NpgsqlCommand cmd;
-            if(deleteTable)
-            {
-                cmd = new NpgsqlCommand($"DELETE FROM {username}_chats;", connection);
-                cmd.ExecuteNonQuery();
-            } else {
-                cmd = new NpgsqlCommand($"CREATE TABLE {username}_chats (chatID INTEGER PRIMARY KEY);");
-                cmd.ExecuteNonQuery();
-            }
-            connection.Close();
         }
     }
 
@@ -66,10 +48,52 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            //create user in user table
-            EnsureUserChatTable(connectionString, username);
+            string sqlStatement = $"INSERT INTO {User_Table} (username, password, session_key) VALUES ('{username}', '{password}', 0);";
+            NpgsqlCommand cmd = new NpgsqlCommand(sqlStatement, connection);
+            cmd.ExecuteNonQuery();
             connection.Close();
             return true;
+        }
+    }
+
+    public static bool IsCorrectLogin(string connectionString, string username, string password)
+    {
+        using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            User? user = connection.Query<User>($"SELECT * FROM {User_Table} WHERE username='{username}' AND password='{password}';").FirstOrDefault();
+            connection.Close();
+            return user != null;
+        }
+    }
+
+    public static bool IsCorrectLogin(string connectionString, string username, int session_key)
+    {
+        using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            User? user = connection.Query<User>($"SELECT * FROM {User_Table} WHERE username='{username}' AND session_key={session_key};").FirstOrDefault();
+            if(user != null)
+            {
+                NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {User_Table} SET session_key=0 WHERE username='{username}';", connection);
+                cmd.ExecuteNonQuery();
+            }
+            connection.Close();
+            return user != null;
+        }
+    }
+
+    public static int CreateSessionKey(string connectionString, string username, string password)
+    {
+        if(!IsCorrectLogin(connectionString, username, password)) return -1;
+        using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            int session_key = new Random().Next(100, 1000);
+            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {User_Table} SET session_key={session_key} WHERE username='{username}';", connection);
+            cmd.ExecuteNonQuery();
+            connection.Close();
+            return session_key;
         }
     }
 }
