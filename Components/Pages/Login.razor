@@ -8,6 +8,12 @@
     .yellow-border > .mud-input-control-input-container > .mud-input.mud-input-outlined >  .mud-input-outlined-border{@($"border-color: {Colors.DeepOrange.Darken2};");}
 </style>
 
+<MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}; height: 8vh;")">
+    <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Size="Size.Medium" style="@($"color: {Colors.Yellow.Darken4};")" Href="https://github.com/adam-polak/LemonChat" Target="_blank" />
+    <MudSpacer />
+    <MudText Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">LemonChat</MudText>
+</MudAppBar>
+
 <MudPaper Style="@($"background-color: {Colors.Yellow.Lighten2}; height: 50%; width: 50%; margin: 10% auto; padding: 5%; border-radius: 10px;")">
     @if(_displayStart)
     {
@@ -21,7 +27,7 @@
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
             <br>
             <MudText>Password</MudText>
-            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordIcon" OnAdornmentClick="ToggleShowPassword" AdornmentAriaLabel="Show Password"></MudTextField>
             <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Login</MudButton>
         </MudForm>
     } else if(_displayCreateUser) {
@@ -31,7 +37,7 @@
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
             <br>
             <MudText>Password</MudText>
-            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordIcon" OnAdornmentClick="ToggleShowPassword" AdornmentAriaLabel="Show Password"></MudTextField>
             <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Create User</MudButton>
         </MudForm>
     }
@@ -42,6 +48,9 @@
     bool _displayStart = true;
     bool _displayLogin;
     bool _displayCreateUser;
+    bool _showPassword;
+    InputType PasswordInput = InputType.Password;
+    string PasswordIcon = Icons.Material.Filled.Visibility;
     UserController userController;
 
     User user = new User() { Username = "", Password = "" };
@@ -83,8 +92,22 @@
         return true;
     }
 
+    void ToggleShowPassword()
+    {
+        if(_showPassword)
+        {
+            PasswordInput = InputType.Password;
+            PasswordIcon = Icons.Material.Filled.Visibility;
+        } else {
+            PasswordInput = InputType.Text;
+            PasswordIcon = Icons.Material.Filled.VisibilityOff;
+        }
+        _showPassword = !_showPassword;
+    }
+
     void ToggleLogin()
     {
+        if(_showPassword) ToggleShowPassword();
         user.Username = "";
         user.Password = "";
         _displayStart = !_displayStart;
@@ -93,6 +116,7 @@
 
     void ToggleCreateUser()
     {
+        if(_showPassword) ToggleShowPassword();
         user.Username = "";
         user.Password = "";
         _displayStart = !_displayStart;
