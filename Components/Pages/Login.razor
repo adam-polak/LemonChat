@@ -56,26 +56,30 @@
     void TryLogin()
     {
         if(!validUser()) return;
-        if(!userController.ContainsUser(user.Username)) return; //display user doesn't exist
-        if(!userController.IsCorrectLogin(user.Username, user.Password)) return; //display incorrect login
+        userController.KillSessionKey(user.Username);
         Navigation.NavigateTo($"/chat/{user.Username}/{userController.CreateSessionKey(user.Username, user.Password)}");
     }
 
     void TryCreateUser()
     {
         if(!validUser()) return;
-        if(userController.ContainsUser(user.Username)) return; //display user already exists
         userController.CreateUser(user.Username, user.Password);
         user.Username = "";
         user.Password = "";
-        _displayCreateUser = !_displayCreateUser;
-        _displayLogin = !_displayLogin;
+        ToggleCreateUser();
     }
 
     bool validUser()
     {
-        if(user.Username.Count() == 0 || !Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) return false;
-        if(user.Password.Count() ==0 || Regex.IsMatch(user.Password, @"/^\S*$/")) return false;
+        if(user.Username.Count() == 0 || !Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) 
+        {
+            //display only letters for username
+            return false;
+        }
+        if(user.Password.Count() ==0 || Regex.IsMatch(user.Password, @"/^\S*$/")) {
+            //display no spaces for password
+            return false;
+        }
         return true;
     }
 

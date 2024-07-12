@@ -40,8 +40,7 @@
     [Parameter]
     public int Session_Key { get; set; }
 
-    private string Username = "test";
-    private string Password = "";
+    private string Username = "";
 
     UserController userController;
 
@@ -50,7 +49,7 @@
         {
             Username = RouteUsername ?? Username;
             userController = new UserController(Config.GetConnectionString("Default") ?? "");
-            if(!userController.IsCorrectLogin(Username, Session_Key) && !userController.IsCorrectLogin(Username, Password)) Navigation.NavigateTo("/");
+            if(!userController.IsCorrectLogin(Username, Session_Key)) Navigation.NavigateTo("/");
         });
     }
 

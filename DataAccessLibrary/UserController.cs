@@ -87,4 +87,16 @@ public class UserController
             return session_key;
         }
     }
+
+    public void KillSessionKey(string username)
+    {
+        if(!ContainsUser(username)) return;
+        using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
+        {
+            connection.Open();
+            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {User_Table} SET session_key=0 WHERE username='{username}';", connection);
+            cmd.ExecuteNonQuery();
+            connection.Close();
+        }
+    }
 }
