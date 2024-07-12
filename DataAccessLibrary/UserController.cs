@@ -26,17 +26,6 @@ public class UserController
         }
     }
 
-    private bool IsUserInChat(string username, int chatId)
-    {
-        using(NpgsqlConnection connection =  new NpgsqlConnection(_connection_string))
-        {
-            connection.Open();
-            UserInChat? user = connection.Query<UserInChat>($"SELECT * FROM {User_InChat_Table} WHERE chatID={chatId} AND user='{username}';").FirstOrDefault();
-            connection.Close();
-            return user != null;
-        }
-    }
-
     public bool CreateUser(string username, string password)
     {
         if(ContainsUser(username)) return false;
@@ -99,4 +88,5 @@ public class UserController
             connection.Close();
         }
     }
+    
 }

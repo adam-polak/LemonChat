@@ -4,4 +4,5 @@ public class ChatInfo
 {
     public int ChatId { get; set; }
     public required string Chat_Name { get; set; }
+    public required string Username { get; set; }
 }
