@@ -6,6 +6,7 @@
     .yellow-border-focus > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:focus-within ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
     .yellow-border-hover > .mud-input-control-input-container > .mud-input.mud-input-outlined > input:hover ~ .mud-input-outlined-border{@($"border-color: {Colors.Yellow.Darken2};")}
     .yellow-border > .mud-input-control-input-container > .mud-input.mud-input-outlined >  .mud-input-outlined-border{@($"border-color: {Colors.DeepOrange.Darken2};");}
+    .error-color{color: red;}
 </style>
 
 <MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}; height: 8vh;")">
@@ -25,9 +26,22 @@
         <MudForm @onsubmit="TryLogin">
             <MudText>Username</MudText>
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
+            @if(_lettersError)
+            {
+                <MudText class="error-color">* Username should only contain letters</MudText>
+            }
+            @if(_incorrectLogin)
+            {
+                <br>
+                <MudText class="text-center error-color">*** Incorrect Login ***</MudText>
+            }
             <br>
             <MudText>Password</MudText>
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordIcon" OnAdornmentClick="ToggleShowPassword" AdornmentAriaLabel="Show Password"></MudTextField>
+            @if(_spacesError)
+            {
+                <MudText class="error-color">* Password can't contain any spaces</MudText>
+            }
             <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Login</MudButton>
         </MudForm>
     } else if(_displayCreateUser) {
@@ -35,9 +49,21 @@
         <MudForm @onsubmit="TryCreateUser">
             <MudText>Username</MudText>
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
+            @if(_lettersError)
+            {
+                <MudText class="error-color">* Username should only contain letters</MudText>
+            }
+            @if(_userExistsError)
+            {
+                <MudText class="error-color">* Username already exists</MudText>
+            }
             <br>
             <MudText>Password</MudText>
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Password" Placeholder="Enter password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordIcon" OnAdornmentClick="ToggleShowPassword" AdornmentAriaLabel="Show Password"></MudTextField>
+            @if(_spacesError)
+            {
+                <MudText class="error-color">* Password can't contain any spaces</MudText>
+            }
             <MudButton ButtonType="ButtonType.Submit" Style="@($"background-color: {Colors.Amber.Lighten2}; color: {Colors.Yellow.Darken4}; font-size: 1.5em; font-weight:500; width: 100%; margin-top: .5em;")">Create User</MudButton>
         </MudForm>
     }
@@ -49,6 +75,10 @@
     bool _displayLogin;
     bool _displayCreateUser;
     bool _showPassword;
+    bool _userExistsError;
+    bool _lettersError;
+    bool _spacesError;
+    bool _incorrectLogin;
     InputType PasswordInput = InputType.Password;
     string PasswordIcon = Icons.Material.Filled.Visibility;
     UserController userController;
@@ -62,9 +92,27 @@
         });
     }
 
+    void TurnOffErrors()
+    {
+        TurnOffFormatErrors();
+        _incorrectLogin = false;
+        _userExistsError = false;
+    }
+
+    void TurnOffFormatErrors()
+    {
+        _lettersError = false;
+        _spacesError = false;
+    }
+
     void TryLogin()
     {
         if(!validUser()) return;
+        if(!userController.IsCorrectLogin(user.Username, user.Password))
+        {
+            _incorrectLogin = true;
+            return;
+        } else _incorrectLogin = false;
         userController.KillSessionKey(user.Username);
         Navigation.NavigateTo($"/chat/{user.Username}/{userController.CreateSessionKey(user.Username, user.Password)}");
     }
@@ -72,6 +120,11 @@
     void TryCreateUser()
     {
         if(!validUser()) return;
+        if(userController.ContainsUser(user.Username))
+        {
+            _userExistsError = true;
+            return;
+        } else _userExistsError = false;
         userController.CreateUser(user.Username, user.Password);
         user.Username = "";
         user.Password = "";
@@ -82,13 +135,14 @@
     {
         if(user.Username.Count() == 0 || !Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) 
         {
-            //display only letters for username
+            _lettersError = true;
             return false;
         }
-        if(user.Password.Count() ==0 || Regex.IsMatch(user.Password, @"/^\S*$/")) {
-            //display no spaces for password
+        if(user.Password.Count() == 0 || !Regex.IsMatch(user.Password, @"[^-\s]")) {
+            _spacesError = true;
             return false;
         }
+        TurnOffFormatErrors();
         return true;
     }
 
@@ -107,6 +161,7 @@
 
     void ToggleLogin()
     {
+        TurnOffErrors();
         if(_showPassword) ToggleShowPassword();
         user.Username = "";
         user.Password = "";
@@ -116,6 +171,7 @@
 
     void ToggleCreateUser()
     {
+        TurnOffErrors();
         if(_showPassword) ToggleShowPassword();
         user.Username = "";
         user.Password = "";
