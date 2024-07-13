@@ -42,6 +42,7 @@
 
     List<ChatInfo> ChatGroups = [];
     List<Chat> CurrentChat = [];
+    int curChatId = 0;
     string InputChat = "";
     string CreateChat = "";
     bool _openChat = true;
@@ -66,22 +67,26 @@
         chatInfoController = new ChatInfoController(connectionString);
         ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         chatController = new ChatController(connectionString);
+        UpdateChat();
     }
 
     void UpdateChat()
     {
-        CurrentChat = chatController.GetChats(0);
-    }
-
-    void UpdateChatGroups()
-    {
-        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+        if(curChatId != 0) 
+        {
+            int largest = CurrentChat.Count > 0 ? CurrentChat.Last().MessageId : 0;
+            if(largest != 0)
+            {
+                List<Chat> chats = chatController.GetChats(curChatId);
+                if(chats.Last().MessageId > largest) CurrentChat.Add(chats.Last());
+            } else CurrentChat = chatController.GetChats(curChatId);
+        }
     }
 
     void SendChat()
     {
         if(CurrentChat == null) return;
-        chatController.SendChat(5775, Username, InputChat);
+        chatController.SendChat(curChatId, Username, InputChat);
         UpdateChat();
     }
 
@@ -94,12 +99,14 @@
     {
         chatInfoController.CreateChat(Username, CreateChat);
         ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         CreateChat = "";
     }
 
     void ChangeGroup(ChatInfo info)
     {
-        CurrentChat = chatController.GetChats(info.ChatId);
+        curChatId = info.ChatId;
+        UpdateChat();
     }
 
 }

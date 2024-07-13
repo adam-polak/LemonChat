@@ -7,12 +7,12 @@ namespace LemonChat.DataAccessLibrary.Controllers;
 public class UserController
 {
     
-    private static string User_Table = Environment.GetEnvironmentVariable("USER_TABLE") ?? "user_table";
-    private static string User_InChat_Table = Environment.GetEnvironmentVariable("USER_INCHAT_TABLE") ?? "user_inchat_table";
+    private string table_name;
     private string _connection_string;
 
     public UserController(string connectionString)
     {
+        table_name = Environment.GetEnvironmentVariable("USER_TABLE") ?? "user_table";
         _connection_string = connectionString;
     }
 
@@ -21,7 +21,7 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            User? user = connection.Query<User>($"SELECT * FROM {UserController.User_Table} WHERE username='{username}';").FirstOrDefault();
+            User? user = connection.Query<User>($"SELECT * FROM {table_name} WHERE username='{username}';").FirstOrDefault();
             connection.Close();
             return user != null;
         }
@@ -33,7 +33,7 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            string sqlStatement = $"INSERT INTO {User_Table} (username, password, session_key) VALUES ('{username}', '{password}', 0);";
+            string sqlStatement = $"INSERT INTO {table_name} (username, password, session_key) VALUES ('{username}', '{password}', 0);";
             NpgsqlCommand cmd = new NpgsqlCommand(sqlStatement, connection);
             cmd.ExecuteNonQuery();
             connection.Close();
@@ -46,7 +46,7 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            User? user = connection.Query<User>($"SELECT * FROM {User_Table} WHERE username='{username}' AND password='{password}';").FirstOrDefault();
+            User? user = connection.Query<User>($"SELECT * FROM {table_name} WHERE username='{username}' AND password='{password}';").FirstOrDefault();
             connection.Close();
             return user != null;
         }
@@ -58,7 +58,7 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            User? user = connection.Query<User>($"SELECT * FROM {User_Table} WHERE username='{username}' AND session_key={session_key};").FirstOrDefault();
+            User? user = connection.Query<User>($"SELECT * FROM {table_name} WHERE username='{username}' AND session_key={session_key};").FirstOrDefault();
             connection.Close();
             return user != null;
         }
@@ -71,7 +71,7 @@ public class UserController
         {
             connection.Open();
             int session_key = new Random().Next(1000, 10000);
-            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {User_Table} SET session_key={session_key} WHERE username='{username}';", connection);
+            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {table_name} SET session_key={session_key} WHERE username='{username}';", connection);
             cmd.ExecuteNonQuery();
             connection.Close();
             return session_key;
@@ -84,7 +84,7 @@ public class UserController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {User_Table} SET session_key=0 WHERE username='{username}';", connection);
+            NpgsqlCommand cmd = new NpgsqlCommand($"UPDATE {table_name} SET session_key=0 WHERE username='{username}';", connection);
             cmd.ExecuteNonQuery();
             connection.Close();
         }

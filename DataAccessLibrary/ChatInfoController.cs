@@ -7,11 +7,13 @@ namespace LemonChat.DataAccessLibrary.Controllers;
 public class ChatInfoController
 {
     private string table_name;
+    private string user_inchat_table;
     private string _connection_string;
 
     public ChatInfoController(string connectionString)
     {
         table_name = Environment.GetEnvironmentVariable("CHATINFO_TABLE") ?? "ChatInfo_Table";
+        user_inchat_table = Environment.GetEnvironmentVariable("USER_INCHAT_TABLE") ?? "USER_INCHAT_TABLE";
         _connection_string = connectionString;
     }
 
@@ -31,10 +33,10 @@ public class ChatInfoController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            List<ChatInfo> info = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} WHERE chatid={id};");
+            List<UserInChat> usersInChat = (List<UserInChat>)connection.Query<UserInChat>($"SELECT * FROM {user_inchat_table} WHERE chatid={id};");
             connection.Close();
             List<string> users = [];
-            foreach(ChatInfo chat in info) users.Add(chat.Username);
+            foreach(UserInChat user in usersInChat) users.Add(user.Username);
             return users;
         }
     }
@@ -55,13 +57,32 @@ public class ChatInfoController
             while(ids.Contains(id)) id = rnd.Next(100, 100000);
             NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {table_name} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
+            cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, username) VALUES ({id}, '{username}');");
             connection.Close();
         }
     }
 
-    public void AddUserToChat(int id, string username, string chat_name)
+    public bool IsUserInChat(int id, string username)
     {
+        using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
+        {
+            connection.Open();
+            UserInChat? user = connection.Query<UserInChat>($"SELECT * FROM {user_inchat_table} WHERE chatid={id} AND username='{username}';").FirstOrDefault();
+            connection.Close();
+            return user != null;
+        }
+    }
 
+    public void AddUserToChat(int id, string username)
+    {
+        if(IsUserInChat(id, username)) return;
+        using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
+        {
+            connection.Open();
+            NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, username) VALUES ({id}, '{username}');", connection);
+            cmd.ExecuteNonQuery();
+            connection.Close();
+        }
     }
 
     public void LeaveChat(int chatId, string username)
