@@ -1,6 +1,6 @@
 namespace LemonChat.DataAccessLibrary.Models;
 
-public class ChatGroup
+public class Chat
 {
     public int ChatId { get; set; }
     public int MessageId { get; set; }

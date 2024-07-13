@@ -20,7 +20,7 @@ public class ChatInfoController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name};");
+            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} WHERE username='{username}';");
             connection.Close();
             return chats;
         }
@@ -55,8 +55,6 @@ public class ChatInfoController
             while(ids.Contains(id)) id = rnd.Next(100, 100000);
             NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {table_name} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
-            cmd = new NpgsqlCommand($"CREATE TABLE chat{id}_group (ChatId INTEGER, MessageId INTEGER, Message TEXT, Sent_By TEXT, Date TEXT);", connection);
-            cmd.ExecuteNonQuery();
             connection.Close();
         }
     }
@@ -72,13 +70,7 @@ public class ChatInfoController
         {
             connection.Open();
             List<ChatInfo> info = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} WHERE ChatId={chatId};");
-            NpgsqlCommand cmd;
-            if(info.Count == 1)
-            {
-                cmd = new NpgsqlCommand($"DROP TABLE chat{chatId}_group;", connection);
-                cmd.ExecuteNonQuery();
-            }
-            cmd = new NpgsqlCommand($"DELETE FROM {table_name} WHERE ChatId={chatId} AND Username='{username}';", connection);
+            NpgsqlCommand cmd = new NpgsqlCommand($"DELETE FROM {table_name} WHERE ChatId={chatId} AND Username='{username}';", connection);
             cmd.ExecuteNonQuery();
             connection.Close();
         }

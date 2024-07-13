@@ -19,30 +19,29 @@
         <div style="padding-left: 100%; height: .5em; width: 50%; background-color:@($"{Colors.Yellow.Darken4}");"></div>
         <br>
         <MudDrawerContainer class="customized-scrollbar" style="padding: 0 5%; overflow: scroll;">
-            <MudTextField @bind-Value="CreateChat" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateChats" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="New Chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="CreateGroup" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 100%; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+            <MudTextField @bind-Value="CreateChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="New Chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="CreateGroup" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 100%; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
             <br>
-            @foreach(ChatInfo chat in Chats)
+            @foreach(ChatInfo info in ChatGroups)
             {
-                <MudText>@($"{chat.Chat_Name}")</MudText>
+                <MudButton @onclick="() => ChangeGroup(info)">@($"{info.Chat_Name}")</MudButton>
             }
         </MudDrawerContainer>
     </MudDrawer>
     <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
         <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: -5vh; border-radius: 4px;")" Elevation="0">
-            <div class="container customized-scrollbar" style="padding-top: 10px; height: 75vh; width: 80vw; overflow: scroll; background-color: rgb(0, 0, 0, 0);">
-                <h1>
-                    text here
-                </h1>
-            </div>
+            @foreach(Chat chat in CurrentGroupChat)
+            {
+                <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
+            }
         </MudPaper>
-        <MudTextField @bind-Value="InputChat" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateChatGroup" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80vw; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+        <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80vw; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
     </MudMainContent>
 </MudDrawerContainer>
 
 @code {
 
-    List<ChatInfo> Chats = [];
-    ChatInfo? CurrentGroup;
+    List<ChatInfo> ChatGroups = [];
+    List<Chat> CurrentGroupChat = [];
     string InputChat = "";
     string CreateChat = "";
     bool _openChat = true;
@@ -57,7 +56,7 @@
 
     UserController userController;
     ChatInfoController chatInfoController;
-    ChatGroupController chatGroupController;
+    ChatController chatGroupController;
 
     protected override void OnInitialized() {
         Username = RouteUsername ?? Username;
@@ -65,24 +64,25 @@
         userController = new UserController(connectionString);
         if(!userController.IsCorrectLogin(Username, Session_Key)) Navigation.NavigateTo("/");
         chatInfoController = new ChatInfoController(connectionString);
-        Chats = chatInfoController.ChatsUserIsIn(Username);
-        chatGroupController = new ChatGroupController(connectionString);
+        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+        chatGroupController = new ChatController(connectionString);
     }
 
-    void UpdateChatGroup()
+    void UpdateChat()
     {
-
+        CurrentGroupChat = chatGroupController.GetChats(0);
     }
 
-    void UpdateChats()
+    void UpdateChatGroups()
     {
-        Chats = chatInfoController.ChatsUserIsIn(Username);
+        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
     }
 
     void SendChat()
     {
-        if(CurrentGroup == null) return;
+        if(CurrentGroupChat == null) return;
         chatGroupController.SendChat(5775, Username, InputChat);
+        UpdateChat();
     }
 
     void ToggleChat()
@@ -93,8 +93,13 @@
     void CreateGroup()
     {
         chatInfoController.CreateChat(Username, CreateChat);
-        Chats = chatInfoController.ChatsUserIsIn(Username);
+        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         CreateChat = "";
+    }
+
+    void ChangeGroup(ChatInfo info)
+    {
+        CurrentGroupChat = chatGroupController.GetChats(info.ChatId);
     }
 
 }
