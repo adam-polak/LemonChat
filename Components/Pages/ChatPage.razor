@@ -29,7 +29,7 @@
     </MudDrawer>
     <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
         <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: -5vh; border-radius: 4px;")" Elevation="0">
-            @foreach(Chat chat in CurrentGroupChat)
+            @foreach(Chat chat in CurrentChat)
             {
                 <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
             }
@@ -41,7 +41,7 @@
 @code {
 
     List<ChatInfo> ChatGroups = [];
-    List<Chat> CurrentGroupChat = [];
+    List<Chat> CurrentChat = [];
     string InputChat = "";
     string CreateChat = "";
     bool _openChat = true;
@@ -56,7 +56,7 @@
 
     UserController userController;
     ChatInfoController chatInfoController;
-    ChatController chatGroupController;
+    ChatController chatController;
 
     protected override void OnInitialized() {
         Username = RouteUsername ?? Username;
@@ -65,12 +65,12 @@
         if(!userController.IsCorrectLogin(Username, Session_Key)) Navigation.NavigateTo("/");
         chatInfoController = new ChatInfoController(connectionString);
         ChatGroups = chatInfoController.ChatsUserIsIn(Username);
-        chatGroupController = new ChatController(connectionString);
+        chatController = new ChatController(connectionString);
     }
 
     void UpdateChat()
     {
-        CurrentGroupChat = chatGroupController.GetChats(0);
+        CurrentChat = chatController.GetChats(0);
     }
 
     void UpdateChatGroups()
@@ -80,8 +80,8 @@
 
     void SendChat()
     {
-        if(CurrentGroupChat == null) return;
-        chatGroupController.SendChat(5775, Username, InputChat);
+        if(CurrentChat == null) return;
+        chatController.SendChat(5775, Username, InputChat);
         UpdateChat();
     }
 
@@ -99,7 +99,7 @@
 
     void ChangeGroup(ChatInfo info)
     {
-        CurrentGroupChat = chatGroupController.GetChats(info.ChatId);
+        CurrentChat = chatController.GetChats(info.ChatId);
     }
 
 }
