@@ -17,12 +17,12 @@ public class ChatInfoController
         _connection_string = connectionString;
     }
 
-    public List<ChatInfo> ChatsUserIsIn(string username)
+    public List<UserInChat> ChatsUserIsIn(string username)
     {
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} WHERE username='{username}';");
+            List<UserInChat> chats = (List<UserInChat>)connection.Query<UserInChat>($"SELECT * FROM {user_inchat_table} WHERE username='{username}';");
             connection.Close();
             return chats;
         }
@@ -57,7 +57,8 @@ public class ChatInfoController
             while(ids.Contains(id)) id = rnd.Next(100, 100000);
             NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {table_name} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
-            cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, username) VALUES ({id}, '{username}');");
+            cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
+            cmd.ExecuteNonQuery();
             connection.Close();
         }
     }
@@ -76,12 +77,24 @@ public class ChatInfoController
     public void AddUserToChat(int id, string username)
     {
         if(IsUserInChat(id, username)) return;
+        string chat_name = GetChatName(id);
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, username) VALUES ({id}, '{username}');", connection);
+            NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
             connection.Close();
+        }
+    }
+
+    private string GetChatName(int id)
+    {
+        using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
+        {
+            connection.Open();
+            ChatInfo? info = connection.Query<ChatInfo>($"SELECT * FROM {table_name} WHERE chatid={id};").FirstOrDefault();
+            connection.Close();
+            return info != null ? info.Chat_Name : "";
         }
     }
 
