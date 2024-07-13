@@ -28,8 +28,8 @@
         </MudDrawerContainer>
     </MudDrawer>
     <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
-        <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: -5vh; border-radius: 4px;")" Elevation="0">
-        <MudTextField @bind-Value="AddUser" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Add user to chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="AddUserToChat" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 80vw; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+        <MudTextField @bind-Value="AddUser" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Add user to chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="AddUserToChat" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 80vw; margin: auto; margin-top: -7vh; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+        <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: .5em; border-radius: 4px;")" Elevation="0">
             @foreach(Chat chat in CurrentChat)
             {
                 <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
@@ -67,9 +67,16 @@
         userController = new UserController(connectionString);
         if(!userController.IsCorrectLogin(Username, Session_Key)) Navigation.NavigateTo("/");
         chatInfoController = new ChatInfoController(connectionString);
-        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         chatController = new ChatController(connectionString);
-        UpdateChat();
+        var timer = new System.Threading.Timer((_) =>
+        {
+            ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+            UpdateChat();
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        }, null, 0, 1000);
     }
 
     void AddUserToChat()
@@ -106,7 +113,6 @@
     void CreateGroup()
     {
         chatInfoController.CreateChat(Username, CreateChat);
-        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         CreateChat = "";
     }
