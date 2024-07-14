@@ -32,10 +32,13 @@
         <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: .5em; border-radius: 4px;")" Elevation="0">
             @foreach(Chat chat in CurrentChat)
             {
-                <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
+                @if(!chat.Message.Equals(""))
+                {
+                    <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
+                }
             }
         </MudPaper>
-        <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80vw; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+        <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80vw; margin: .5em auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
     </MudMainContent>
 </MudDrawerContainer>
 
@@ -89,12 +92,12 @@
     {
         if(curChatId != 0) 
         {
-            int largest = CurrentChat.Count > 0 ? CurrentChat.Last().MessageId : 0;
-            if(largest != 0)
-            {
+            if(CurrentChat.Count == 0 || CurrentChat.First().ChatId != curChatId) CurrentChat = chatController.GetChats(curChatId);
+            else {
+                int largest = CurrentChat.Last().MessageId;
                 List<Chat> chats = chatController.GetChats(curChatId);
                 if(chats.Last().MessageId > largest) CurrentChat.Add(chats.Last());
-            } else CurrentChat = chatController.GetChats(curChatId);
+            }
         }
     }
 
