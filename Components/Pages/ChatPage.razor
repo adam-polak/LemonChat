@@ -45,7 +45,7 @@
         <MudContainer Style="@($"background:{Colors.Amber.Accent1}; color:{Colors.Yellow.Darken4}; height: 90%; width: 30%; margin-top: -6vh; border-radius: 4px; padding: 2%;")">
             @if(curChatId == 0)
             {
-                <MudText class="text-center" style="font-size: 1.75em; font-weight: 700;">Create a chat to get started</MudText>
+                <MudText class="text-center" style="font-size: 1.75em; font-weight: 700;">Create a chat to get started!</MudText>
             } else {
                 <MudText class="text-center" style="font-size: 1.75em; font-weight: 700;">@curChatName</MudText>
             }
@@ -92,10 +92,11 @@
         if(!userController.IsCorrectLogin(Username, Session_Key)) Navigation.NavigateTo("/");
         chatInfoController = new ChatInfoController(connectionString);
         chatController = new ChatController(connectionString);
+        ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+        if(ChatGroups.Count != 0) ChangeGroup(ChatGroups.First());
         var timer = new System.Threading.Timer((_) =>
         {
             ChatGroups = chatInfoController.ChatsUserIsIn(Username);
-            if(ChatGroups.Count != 0) ChangeGroup(ChatGroups.First());
             UpdateChat();
             InvokeAsync(() =>
             {
@@ -108,6 +109,8 @@
     {
         if(!userController.ContainsUser(AddUser)) return;
         chatInfoController.AddUserToChat(curChatId, AddUser);
+        UsersInChat.Add(AddUser);
+        AddUser = "";
     }
 
     void UpdateChat()
@@ -128,6 +131,7 @@
     {
         if(CurrentChat == null) return;
         chatController.SendChat(curChatId, Username, InputChat);
+        InputChat = "";
         UpdateChat();
     }
 
