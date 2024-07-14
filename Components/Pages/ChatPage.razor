@@ -9,13 +9,14 @@
 </style>
 
 <MudAppBar Fixed="false" Elevation="0" Style="@($"background:{Colors.Yellow.Lighten3}; height: 8vh;")">
-    <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; font-size: 1.2em;")">View Chats</MudButton>
+    <MudButton @onclick="ToggleChat" Edge="Edge.Start" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; font-size: 1.2em;")">@DrawerText</MudButton>
+    <MudSpacer />
+    <MudText Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">User: @Username</MudText>
     <MudSpacer />
     <MudText Edge="Edge.End" Style="@($"color:{Colors.Yellow.Darken4}; font-size: 1.75em; font-weight:900;")">LemonChat</MudText>
 </MudAppBar>
 <MudDrawerContainer Style="@($"background:{Colors.Yellow.Darken2}; height; 92vh;")">
     <MudDrawer Overlay="false" Elevation="0" @bind-Open="@_openChat" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Yellow.Lighten4}; height: 92vh;")">
-        <MudDrawerHeader style="padding-left: 25%;"><MudText Typo="Typo.h3" style="font-weight: 700;">@Username</MudText></MudDrawerHeader>
         <div style="padding-left: 100%; height: .5em; width: 50%; background-color:@($"{Colors.Yellow.Darken4}");"></div>
         <br>
         <MudDrawerContainer class="customized-scrollbar" style="padding: 0 5%; overflow: scroll;">
@@ -23,22 +24,39 @@
             <br>
             @foreach(UserInChat group in ChatGroups)
             {
-                <MudButton @onclick="() => ChangeGroup(group)">@($"{group.Chat_Name}")</MudButton>
+                <MudButton @onclick="() => ChangeGroup(group)" Style="@($"color:{Colors.Yellow.Darken4}; background:{Colors.Amber.Lighten3}; width: 100%; margin: .5em 0;")">@($"{group.Chat_Name}")</MudButton>
             }
         </MudDrawerContainer>
     </MudDrawer>
-    <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh;")">
-        <MudTextField @bind-Value="AddUser" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Add user to chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="AddUserToChat" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 80vw; margin: auto; margin-top: -7vh; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
-        <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80vw; margin: auto; margin-top: .5em; border-radius: 4px;")" Elevation="0">
-            @foreach(Chat chat in CurrentChat)
-            {
-                @if(!chat.Message.Equals(""))
+    <MudMainContent Style="@($"background:{Colors.Yellow.Darken2}; height: 92vh; display: flex; justify-content: center;")">
+        <MudContainer style="margin-top: -7vh;">
+            <MudTextField @bind-Value="AddUser" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Add user to chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="AddUserToChat" AdornmentIcon="@Icons.Material.Filled.Add" Style="@($"width: 80%; margin: auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+            <MudPaper Style="@($"background:{Colors.Amber.Accent1}; height:70vh; width: 80%; margin: auto; margin-top: .5em; border-radius: 4px; padding: 2%;")" Elevation="0">
+                @foreach(Chat chat in CurrentChat)
                 {
-                    <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
+                    @if(!chat.Message.Equals(""))
+                    {
+                        <MudText>@($"{chat.Sent_By}: {chat.Message}")</MudText>
+                    }
                 }
+            </MudPaper>
+            <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80%; margin: .5em auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+        </MudContainer>
+        <MudContainer Style="@($"background:{Colors.Amber.Accent1}; color:{Colors.Yellow.Darken4}; height: 90%; width: 30%; margin-top: -6vh; border-radius: 4px; padding: 2%;")">
+            @if(curChatId == 0)
+            {
+                <MudText class="text-center" style="font-size: 1.75em; font-weight: 700;">Create a chat to get started</MudText>
+            } else {
+                <MudText class="text-center" style="font-size: 1.75em; font-weight: 700;">@curChatName</MudText>
             }
-        </MudPaper>
-        <MudTextField @bind-Value="InputChat" class="yellow-border yellow-border-hover yellow-border-focus" Placeholder="Send chat" Variant="Variant.Outlined" Adornment="Adornment.End" OnAdornmentClick="SendChat" AdornmentIcon="@Icons.Material.Filled.Send" Style="@($"width: 80vw; margin: .5em auto; background:{Colors.Amber.Accent1}; border-radius: 4px;")"></MudTextField>
+            <br>
+            <div style="height: .5em; width: 100%; background-color:@($"{Colors.Yellow.Darken4}");"></div>
+            <br>
+            @foreach(string user in UsersInChat)
+            {
+                <h5 class="text-center">@user</h5>
+            }
+        </MudContainer>
     </MudMainContent>
 </MudDrawerContainer>
 
@@ -46,7 +64,10 @@
 
     List<UserInChat> ChatGroups = [];
     List<Chat> CurrentChat = [];
+    List<string> UsersInChat = [];
+    string curChatName = "";
     int curChatId = 0;
+    string DrawerText = "Hide Chats";
     string AddUser = "";
     string InputChat = "";
     string CreateChat = "";
@@ -74,6 +95,7 @@
         var timer = new System.Threading.Timer((_) =>
         {
             ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+            if(ChatGroups.Count != 0) ChangeGroup(ChatGroups.First());
             UpdateChat();
             InvokeAsync(() =>
             {
@@ -92,6 +114,7 @@
     {
         if(curChatId != 0) 
         {
+            UsersInChat = chatInfoController.UsersInChat(curChatId);
             if(CurrentChat.Count == 0 || CurrentChat.First().ChatId != curChatId) CurrentChat = chatController.GetChats(curChatId);
             else {
                 int largest = CurrentChat.Last().MessageId;
@@ -110,6 +133,8 @@
 
     void ToggleChat()
     {
+        if(_openChat) DrawerText = "View Chats";
+        else DrawerText = "Hide Chats";
         _openChat = !_openChat;
     }
 
@@ -123,6 +148,7 @@
     void ChangeGroup(UserInChat group)
     {
         curChatId = group.ChatId;
+        curChatName = group.Chat_Name;
         UpdateChat();
     }
 
