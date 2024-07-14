@@ -28,7 +28,7 @@
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
             @if(_lettersError)
             {
-                <MudText class="error-color">* Username should only contain letters</MudText>
+                <MudText class="error-color">* Username should only contain lowercase letters</MudText>
             }
             @if(_incorrectLogin)
             {
@@ -51,7 +51,7 @@
             <MudTextField ShrinkLabel class="yellow-border yellow-border-focus yellow-border-hover" @bind-Value="user.Username" Placeholder="Enter username" Variant="Variant.Outlined"></MudTextField>
             @if(_lettersError)
             {
-                <MudText class="error-color">* Username should only contain letters</MudText>
+                <MudText class="error-color">* Username should only contain lowercase letters</MudText>
             }
             @if(_userExistsError)
             {
@@ -133,7 +133,7 @@
 
     bool validUser()
     {
-        if(user.Username.Count() == 0 || !Regex.IsMatch(user.Username, @"^[a-zA-Z]+$")) 
+        if(user.Username.Count() == 0 || !Regex.IsMatch(user.Username, @"^[a-z]+$")) 
         {
             _lettersError = true;
             return false;
