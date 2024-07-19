@@ -18,6 +18,7 @@ public class ChatController
 
     public void SendChat(int chatId, string username, string message)
     {
+        if(message.Equals("")) return;
         int messageId = LastMessageId(chatId) + 1;
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {

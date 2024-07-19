@@ -43,6 +43,7 @@ public class ChatInfoController
 
     public void CreateChat(string username, string chat_name)
     {
+        if(chat_name.Equals("")) return;
         Random rnd = new Random();
         int id = rnd.Next(100, 100000);
         List<ChatInfo> chats = GetChatInfos();

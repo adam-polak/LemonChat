@@ -29,7 +29,7 @@ public class UserController
 
     public bool CreateUser(string username, string password)
     {
-        if(ContainsUser(username)) return false;
+        if(username.Equals("") || ContainsUser(username)) return false;
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
