@@ -45,21 +45,32 @@ public class ChatInfoController
     {
         Random rnd = new Random();
         int id = rnd.Next(100, 100000);
+        List<ChatInfo> chats = GetChatInfos();
+        HashSet<int> ids = new HashSet<int>();
+        foreach(ChatInfo chat in chats)
+        {
+            ids.Add(chat.ChatId);
+        }
+        while(ids.Contains(id)) id = rnd.Next(100, 100000);
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} GROUP BY chatid;");
-            HashSet<int> ids = new HashSet<int>();
-            foreach(ChatInfo chat in chats)
-            {
-                ids.Add(chat.ChatId);
-            }
-            while(ids.Contains(id)) id = rnd.Next(100, 100000);
             NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {table_name} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
             connection.Close();
         }
         AddUserToChat(id, username);
+    }
+
+    private List<ChatInfo> GetChatInfos()
+    {
+        using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
+        {
+            connection.Open();
+            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} GROUP BY chatid;");
+            connection.Close();
+            return chats;
+        }
     }
 
     public bool IsUserInChat(int id, string username)
