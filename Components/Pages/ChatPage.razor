@@ -85,7 +85,7 @@
     ChatInfoController chatInfoController;
     ChatController chatController;
 
-    protected override void OnInitialized() {
+    protected override async Task OnInitializedAsync() {
         Username = RouteUsername ?? Username;
         string connectionString = Config.GetConnectionString("Default") ?? "";
         userController = new UserController(connectionString);
@@ -94,15 +94,18 @@
         chatController = new ChatController(connectionString);
         ChatGroups = chatInfoController.ChatsUserIsIn(Username);
         if(ChatGroups.Count != 0) ChangeGroup(ChatGroups.First());
-        var timer = new System.Threading.Timer((_) =>
+        await Task.Run(() =>
         {
-            ChatGroups = chatInfoController.ChatsUserIsIn(Username);
-            UpdateChat();
-            InvokeAsync(() =>
+            var timer = new System.Threading.Timer((_) =>
             {
-                StateHasChanged();
-            });
-        }, null, 0, 1000);
+                ChatGroups = chatInfoController.ChatsUserIsIn(Username);
+                UpdateChat();
+                InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+            }, null, 0, 1000);
+        });
     }
 
     void AddUserToChat()
