@@ -43,6 +43,8 @@ public class ChatInfoController
 
     public void CreateChat(string username, string chat_name)
     {
+        Random rnd = new Random();
+        int id = rnd.Next(100, 100000);
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
@@ -52,15 +54,12 @@ public class ChatInfoController
             {
                 ids.Add(chat.ChatId);
             }
-            Random rnd = new Random();
-            int id = rnd.Next(100, 100000);
             while(ids.Contains(id)) id = rnd.Next(100, 100000);
             NpgsqlCommand cmd = new NpgsqlCommand($"INSERT INTO {table_name} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
             cmd.ExecuteNonQuery();
-            cmd = new NpgsqlCommand($"INSERT INTO {user_inchat_table} (chatid, chat_name, username) VALUES ({id}, '{chat_name}', '{username}');", connection);
-            cmd.ExecuteNonQuery();
             connection.Close();
         }
+        AddUserToChat(id, username);
     }
 
     public bool IsUserInChat(int id, string username)
