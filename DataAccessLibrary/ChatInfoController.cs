@@ -67,7 +67,7 @@ public class ChatInfoController
         using(NpgsqlConnection connection = new NpgsqlConnection(_connection_string))
         {
             connection.Open();
-            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name} GROUP BY chatid;");
+            List<ChatInfo> chats = (List<ChatInfo>)connection.Query<ChatInfo>($"SELECT * FROM {table_name};");
             connection.Close();
             return chats;
         }
